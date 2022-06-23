@@ -1,0 +1,13 @@
+[Unit]
+Description=My Project
+After=syslog.target network.target
+
+[Service]
+Type=simple
+#Restart=always -> This messes debugg, I think it brings up the node everytime. Disabled by now
+RestartSec=1
+ExecStart=/home/ubuntu/timeoff-management/NPM-trigger.sh
+User=ubuntu
+
+#[Install]
+#WantedBy=multi.user.target

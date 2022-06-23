@@ -1,0 +1,49 @@
+#update system
+apt update && upgrade
+#download install script npm
+curl -sL https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.0/install.sh -o install_nvm.sh
+#run script
+bash install_nvm.sh
+#restart terminal 
+source ~/.bash_profile
+#install node 13
+nvm install 13.0.0
+#git install 
+sudo apt get git
+#clone app
+git clone https://github.com/timeoff-management/application.git timeoff-management
+#change dir
+cd timeoff-management
+#start app
+npm install
+npm start
+
+For testing
+host:3000
+---pasos para crear vagrant VM-----
+
+----Ansible----
+on host machine (not vm)
+install ansible - PIP INSTALL ANSIBLE
+Create Ansible cookbook - site.yml
+
+---enable vagrant provision for Ansible---
+on site.yml automate nvm, updates.. the steps above. These are declared from the varant file and
+show when u issue vagrant provision (as vm is up)
+Provisioned steps for installing NPM and hav the app running.
+I had to provide full permissions to all users in the app folder for npm to work. i need to add the vagrant user with full recursive permissions over that directory. since the become method used in the playbook changed the permissions in the folder
+
+---Automating the application deployment---
+Currently, a service is running our application through a script, in time-off-mgmt, script.sh
+And a service have been configured to run it. (appdeploy.service)
+
+
+
+
+
+
+STEPS
+TErraform plan
+terraform apply
+ansible-playbook -v site.yml -i /home/ric/Documents/terraform/hosts
+

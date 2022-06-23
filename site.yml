@@ -1,0 +1,62 @@
+- name: Configure application
+  hosts: all #ejecuta en todos los hosts en /etc/ansible/hosts
+  become: true
+  become_method: sudo # se vuelve sudo, usa git y se baja el repo
+  vars:
+      repository_url: https://github.com/ricfdez/timeoff-management-application-iac-demo.git
+      repository_path: /home/ubuntu/timeoff-management
+      ansible_user_id: ubuntu
+
+  tasks:
+    - name: Install packages
+      apt: update_cache=yes name={{ item }} state=present
+      with_items:
+        - git
+        - curl
+        - wget
+        - nginx
+        - sqlite3
+
+    - name: Clone repository
+      git: repo='{{ repository_url }}' dest='{{ repository_path }}'
+      become: yes
+      become_user: ubuntu
+      args:
+        force: true
+
+    - name: install install_nvm
+      become: yes
+      become_user: ubuntu
+      shell: >
+        curl https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.0/install.sh | sh creates=/home/{{ ansible_user_id }}/.nvm/nvm.sh
+    #  tags: testnvm
+
+    - name: install node and set version
+      become: yes
+      become_user: ubuntu
+      shell: >
+         /bin/bash -c "source ~/.nvm/nvm.sh && nvm install 13.0.0 && nvm alias default 13.0.0"
+         creates=/home/{{ ansible_user_id }}/.nvm/alias
+
+    - name: install package based on package.json using NPM
+      npm:
+        path: "/home/{{ ansible_user_id }}/timeoff-management"
+        state: present
+      environment:
+        PATH: /home/{{ ansible_user_id }}/.nvm/versions/node/v13.0.0/bin:{{ ansible_facts.env.PATH }}
+      #tags: tes
+
+    - name: move NPM-trigger.sh
+      template: src=NPM-trigger.sh dest={{ repository_path }}
+      tags: testnvm
+
+    - name: CHMOD NPM trigger script
+      become: yes
+      shell: >
+        /bin/bash -c "chmod +x /home/{{ ansible_user_id }}/timeoff-management/NPM-trigger.sh"
+
+    - name: copy the Service to the device
+      template: src=Timeoff-mgmt.service dest=/etc/systemd/system/
+
+    - name: make sure server is running
+      service: name=Timeoff-mgmt.service state=started
